@@ -1,3 +1,6 @@
+#Import file
+_import_data.R
+
 # History files
 .Rhistory
 .Rapp.history
