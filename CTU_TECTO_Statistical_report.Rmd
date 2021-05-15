@@ -12,10 +12,10 @@ subtitle: Using simulated data
 ---
 
 ```{r setup, include=FALSE}
-source("_functions.R")
-source("_sim_data.R")
-#source("_import_data.R")
-#source("_data_handling.R")
+source("_scripts/_functions.R")
+source("_scripts/_sim_data.R")
+#source("_scripts/_import_data.R")
+#source("_scripts/_data_handling.R")
 #Kruskal wallis if not fullfilled.
 ```
 
@@ -24,16 +24,25 @@ source("_sim_data.R")
 
 ```{r}
 tbl_func(df,strat_var="group",vars=c("Age","Gender","Nationality","Parental education level","Parental nationality",
-                                     "Parental stress scale (PSS)","Family Environment Scale (FES)",
+                                     "Parental stress scale (PSS)",
                                      "Social responsiveness scale (SRS)","Intelligence (WISC-V/WAIS-IV)"))
 
 ```
 
 *The education-level from the parent with the highest education is presented. For PSS, FES, and SRS the average of the parents who responded is presented*
 
+\newpage
+# Table 2 - Family Environment Scale (FES)
+
+```{r}
+tbl_func(df,strat_var="group",vars=c("Cohesion","Expressiveness","Conflict"), first.col.name = "Relationship Dimensions")
+tbl_func(df,strat_var="group",vars=c("Achievement Orientation","Intellectual-Cultural Orientation","Active-Recreational Orientation","Moral-Religious Emphasis"), first.col.name = "Personal Growth Dimensions")
+tbl_func(df,strat_var="group",vars=c("Oranization","Control"), first.col.name = "System Maintenance Dimensions")
+
+```
 
 \newpage
-# Table 2 - Diagnostic status and comorbidities at baseline
+# Table 3 - Diagnostic status and comorbidities at baseline
 
 ```{r}
 df_baseline <- df[,grepl("pt_id|group|_0", colnames(df))]
@@ -56,6 +65,7 @@ ggarrange(figScores(df,"CY-BOCS", lin_reg=T),
           figScores(df,"CGI-I", lin_reg_simple=T),
           figScores(df,"CGAS", lin_reg=T),
           figScores(df,"TOCS", lin_reg=T),
+          figScores(df,"Kidscreen-10", lin_reg=T),
           figScores(df,"TAFQ-A", lin_reg=T),
           figScores(df,"FAS", lin_reg=T, simple=F),
              ncol=1, common.legend=T, legend="bottom") +
@@ -117,18 +127,39 @@ g1 + geom_bar(stat="identity", width=0.75)
 \newpage
 # Figure 3 - Negative Effects Questionnaire 
 
-```{r, fig.height=2.5}
+```{r, fig.height=4}
+fig_neq <- figScores(df,"NEQ", xminmax=c(3.5,16.5), simple=F, lin_reg_simple = T)
+fig_burden <- ggplot(df, aes(x=group, y=`Negative effect burden`, color=group, fill=group)) + stat_summary(fun=mean, geom="bar", width=0.5) + 
+  stat_summary(fun.data=mean_cl_normal, geom="errorbar", width=0.25, color="black") + theme_minimal() +
+  scale_color_hue(direction = -1, h.start=90) + scale_fill_hue(direction = -1, h.start=90) + 
+  ylab("NEQ per week") + theme(axis.title.x = element_blank())
 
-ggarrange(figScores(df,"NEQ", xminmax=c(3.5,16.5), simple=F, lin_reg_simple = T)) + theme(plot.margin = margin(0.1,0.1,0.1,0.1, "cm"))
+ggarrange(fig_neq, fig_burden, ncol=1, common.legend=T, legend="bottom") + theme(plot.margin = margin(0.1,0.1,0.1,0.1, "cm"))
+
+
 
 ```
 
 
 \newpage
+# Supplemental Table 1 - Psychopathological scores
 
-# Supplemental Table 1 - Diagnostic scores
+**Refers to Figure 1**
+
+# Supplemental Table 2 - Kidscreen-52
 
 Tabllerne som ovenstående figur 1 bygger på.
+
+* Physical well-being
+* Psychological well-being
+* Moods and emotions
+* Self-perception
+* Autonomy
+* Parent relation and home life
+* Peers and social support
+* School environment
+* Social acceptance (bullying)
+* Financial ressources
 
 \newpage
 # Supplemental Timeline
@@ -138,6 +169,7 @@ This timeline will, together with the commits to the version control system, fun
 * 30.04.2021 - First evaluation of presentation of data using simulated tools.
 * 03.05.2021 - Second evaluation of the statistical report.
 * 11.05.2021 - Third evaluation of the statistical report.
+* 14.05.2021 - Fourth evaluation of the statistical report.
 
 \newpage
 # Supplemental Assumptions

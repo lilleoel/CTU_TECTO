@@ -12,11 +12,22 @@ df$group <- var_rand(n,2)
    df$`Nationality` <- var_categories(n,c("Danish","Other"))
    df$`Parental education level` <- var_categories(n,c("High-school (finished)", "2-year grad-school","3-year grad-school", "5-year grad-school", "Ph.d. or equal level"))
    df$`Parental nationality` <- var_categories(n,c("Danish","Danish and other","Other"))
- 
    df$`Parental stress scale (PSS)` <-  var_sample(n,4,400)
-   df$`Family Environment Scale (FES)` <- var_sample(n,4,400)
    df$`Social responsiveness scale (SRS)` <- var_sample(n,4,400)
    df$`Intelligence (WISC-V/WAIS-IV)` <- var_sample(n,4,400)
+   
+#FES ----
+   df$`Cohesion` <-  var_sample(n,0,100)
+   df$`Expressiveness` <-  var_sample(n,0,100)
+   df$`Conflict` <-  var_sample(n,0,100)
+   df$`Independence` <-  var_sample(n,0,100)
+   df$`Achievement Orientation` <-  var_sample(n,0,100)
+   df$`Intellectual-Cultural Orientation` <-  var_sample(n,0,100)
+   df$`Active-Recreational Orientation` <-  var_sample(n,0,100)
+   df$`Moral-Religious Emphasis` <-  var_sample(n,0,100)
+   df$`Oranization` <-  var_sample(n,0,100)
+   df$`Control` <-  var_sample(n,0,100)
+
    
 #Primary outcome ----
  
@@ -34,15 +45,16 @@ df$group <- var_rand(n,2)
 #Seconday outcomes -----
 
    # #Kidscreen-52
-   # df$`Kidscreen-52_follow-up)` <- var_beta(n,-4.327,4.703,"left",digs=2)
+   df$`Kidscreen-10_0` <- var_beta(n,-4.327,4.703,"left",digs=2)
+   df$`Kidscreen-10_4` <- var_beta(n,-4.327,4.703,"left",digs=2)
+   df$`Kidscreen-10_8` <- var_beta(n,-4.327,4.703,"left",digs=2)
+   df$`Kidscreen-10_16` <- var_beta(n,-4.327,4.703,"left",digs=2)
 
    #NEQ
    df$`NEQ_4` <- var_sample(n,0,32)
    df$`NEQ_8` <- var_sample(n,0,32)
    df$`NEQ_16` <- var_sample(n,0,32)
-   df$`Attributed to treatment_4` <- var_sample(n,0,100)/100
-   df$`Attributed to treatment_8` <- var_sample(n,0,100)/100
-   df$`Attributed to treatment_16` <- var_sample(n,0,100)/100
+   df$`Negative effect burden` <- (df$`NEQ_4`+df$`NEQ_8`+df$`NEQ_16`)/16
    
 
 #Exploratory outcomes ----
