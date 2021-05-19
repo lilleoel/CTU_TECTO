@@ -6,27 +6,43 @@ set.seed(730)
 df$pt_id <- c(1:n)
 df$group <- var_rand(n,2)
 
-#Baseline variables ----
+# Baseline variables ----
    df$`Gender` <- var_categories(n,c("Male","Female","Transgender","Other"))
    df$`Age` <- var_beta(n,13,17,"right")
    df$`Nationality` <- var_categories(n,c("Danish","Other"))
-   df$`Parental education level` <- var_categories(n,c("High-school (finished)", "2-year grad-school","3-year grad-school", "5-year grad-school", "Ph.d. or equal level"))
+   df$`Parental education level` <- var_sample(n,0,8)
    df$`Parental nationality` <- var_categories(n,c("Danish","Danish and other","Other"))
-   df$`Parental stress scale (PSS)` <-  var_sample(n,4,400)
-   df$`Social responsiveness scale (SRS)` <- var_sample(n,4,400)
-   df$`Intelligence (WISC-V/WAIS-IV)` <- var_sample(n,4,400)
-   
-#FES ----
-   df$`Cohesion` <-  var_sample(n,0,100)
-   df$`Expressiveness` <-  var_sample(n,0,100)
-   df$`Conflict` <-  var_sample(n,0,100)
-   df$`Independence` <-  var_sample(n,0,100)
-   df$`Achievement Orientation` <-  var_sample(n,0,100)
-   df$`Intellectual-Cultural Orientation` <-  var_sample(n,0,100)
-   df$`Active-Recreational Orientation` <-  var_sample(n,0,100)
-   df$`Moral-Religious Emphasis` <-  var_sample(n,0,100)
-   df$`Oranization` <-  var_sample(n,0,100)
-   df$`Control` <-  var_sample(n,0,100)
+   df$`Full-scale IQ` <- var_sample(n,70,120)
+   df$`OCD-subtype` <- var_categories(n,c("Predominantly obsessional thoughts or ruminations",
+                                          "Predominantly compulsive acts","Mixed obsessional thoughts and acts"))
+
+   #Comorbidities
+   df$`Comorbidities|Depressive disorders` <- var_sample(n,0,1)
+   df$`Comorbidities|Anxiety disorders` <- var_sample(n,0,1)
+   df$`Comorbidities|Adjustment disorders` <- var_sample(n,0,1)
+   df$`Comorbidities|Eating disorders` <- var_sample(n,0,1)
+   df$`Comorbidities|Personality disorders` <- var_sample(n,0,1)
+   df$`Comorbidities|Aspergers Syndrome` <- var_sample(n,0,1)
+   df$`Comorbidities|Hyperkinetic disorders` <- var_sample(n,0,1)
+   df$`Comorbidities|Conduct disorders` <- var_sample(n,0,1)
+   df$`Comorbidities|Tics/Tourettes syndrome` <- var_sample(n,0,1)
+   df$`Comorbidities|Elimination disorders` <- var_sample(n,0,1)
+
+# Baseline psychopathology ----
+   df$`SRS_0` <- var_sample(n,4,400)   
+     
+
+# Family characteristics ----
+   df$`FES - Relationship Dimensions|Cohesion` <-  var_sample(n,0,100)
+   df$`FES - Relationship Dimensions|Expressiveness` <-  var_sample(n,0,100)
+   df$`FES - Relationship Dimensions|Conflict` <-  var_sample(n,0,100)
+   df$`FES - Personal Growth Dimensions|Independence` <-  var_sample(n,0,100)
+   df$`FES - Personal Growth Dimensions|Achievement Orientation` <-  var_sample(n,0,100)
+   df$`FES - Personal Growth Dimensions|Intellectual-Cultural Orientation` <-  var_sample(n,0,100)
+   df$`FES - Personal Growth Dimensions|Active-Recreational Orientation` <-  var_sample(n,0,100)
+   df$`FES - Personal Growth Dimensions|Moral-Religious Emphasis` <-  var_sample(n,0,100)
+   df$`FES - System Maintenance Dimensions|Oranization` <-  var_sample(n,0,100)
+   df$`FES - System Maintenance Dimensions|Control` <-  var_sample(n,0,100)
 
    
 #Primary outcome ----
@@ -42,6 +58,7 @@ df$group <- var_rand(n,2)
    df$CBOCS_grup[df$`CY-BOCS_16` >= 16 & df$`CY-BOCS_16` <= 24] <- "16-24 (Moderately ill)"
    df$CBOCS_grup[df$`CY-BOCS_16` >= 25 & df$`CY-BOCS_16` <= 40] <- "25-40 (Severely ill)"
    df$CBOCS_grup <- as.factor(df$CBOCS_grup)
+   
 #Seconday outcomes -----
 
    # #Kidscreen-52
@@ -102,25 +119,19 @@ df$group <- var_rand(n,2)
    df$`FAS_4` <- var_sample(n,0,32)
    df$`FAS_8` <- var_sample(n, 0, 44)
    df$`FAS_16` <- var_sample(n,0,32)
-
-   #Comorbidities
-   df$`Depression_0` <- var_sample(n,0,1)
-   df$`Agoraphobia_0` <- var_sample(n,0,1)
-   df$`Social phobias_0` <- var_sample(n,0,1)
-   df$`Specific phobias_0` <- var_sample(n,0,1)
-   df$`Separation anxiety disorder_0` <- var_sample(n,0,1)
-   df$`Generalized anxiety disorders_0` <- var_sample(n,0,1)
-   df$`Anorexia nervosa_0` <- var_sample(n,0,1)
-   df$`Anxious personality disorder_0` <- var_sample(n,0,1)
-   df$`Adjustment disorders_0` <- var_sample(n,0,1)
-   df$`Asperger syndrome_0` <- var_sample(n,0,1)
-   df$`ADHD_0` <- var_sample(n,0,1)
-   df$`Oppositional defiant disorder_0` <- var_sample(n,0,1)
-   df$`Transient tics_0` <- var_sample(n,0,1)
-   df$`Chronic tics/Tourette’s syndrome_0` <- var_sample(n,0,1)
-   df$`Nonorganic enuresis_0` <- var_sample(n,0,1)
-   df$`Nonorganic encopresis_0` <- var_sample(n,0,1)
+   
+   #PSS
+   df$`PSS_0` <- var_sample(n, 0, 44)
+   df$`PSS_4` <- var_sample(n,0,32)
+   df$`PSS_8` <- var_sample(n, 0, 44)
+   df$`PSS_16` <- var_sample(n,0,32)
+   
    
 #Creating the df
    df <- as.data.frame(df, check.names=FALSE)
 
+   df$Remitted <- 0
+   df$Remitted[df$`CY-BOCS_16` >= 0 & df$`CY-BOCS_16` <= 10] <- 1
+   
+   df$Response <- 0
+   df$Response[df$`CY-BOCS_0` < 0.70*df$`CY-BOCS_16`] <- 1

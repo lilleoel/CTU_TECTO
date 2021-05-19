@@ -20,39 +20,44 @@ source("_scripts/_sim_data.R")
 ```
 
 \newpage
-# Table 1 - Baseline characteristics
+# Table 1 - Participant characteristics
 
 ```{r}
 tbl_func(df,strat_var="group",vars=c("Age","Gender","Nationality","Parental education level","Parental nationality",
-                                     "Parental stress scale (PSS)",
-                                     "Social responsiveness scale (SRS)","Intelligence (WISC-V/WAIS-IV)"))
+                                     "Full-scale IQ","OCD-subtype",
+                                     "Comorbidities|Depressive disorders","Comorbidities|Anxiety disorders",
+                                     "Comorbidities|Adjustment disorders","Comorbidities|Eating disorders",
+                                     "Comorbidities|Personality disorders","Comorbidities|Aspergers Syndrome",
+                                     "Comorbidities|Hyperkinetic disorders","Comorbidities|Conduct disorders",
+                                     "Comorbidities|Tics/Tourettes syndrome","Comorbidities|Elimination disorders"))
+
 
 ```
 
-*The education-level from the parent with the highest education is presented. For PSS, FES, and SRS the average of the parents who responded is presented*
+*The education-level from the parent with the highest education is used (using ISCED). *
 
 \newpage
-# Table 2 - Family Environment Scale (FES)
-
-```{r}
-tbl_func(df,strat_var="group",vars=c("Cohesion","Expressiveness","Conflict"), first.col.name = "Relationship Dimensions")
-tbl_func(df,strat_var="group",vars=c("Achievement Orientation","Intellectual-Cultural Orientation","Active-Recreational Orientation","Moral-Religious Emphasis"), first.col.name = "Personal Growth Dimensions")
-tbl_func(df,strat_var="group",vars=c("Oranization","Control"), first.col.name = "System Maintenance Dimensions")
-
-```
-
-\newpage
-# Table 3 - Diagnostic status and comorbidities at baseline
+# Table 2 - Baseline psychopathology
 
 ```{r}
 df_baseline <- df[,grepl("pt_id|group|_0", colnames(df))]
 colnames(df_baseline) <- gsub("_0","",colnames(df_baseline))
-tbl_func(df_baseline,strat_var="group",vars=c("CY-BOCS","COIS-R","CGI-S","CGAS","TOCS","TAFQ-A","FAS","Depression","Agoraphobia","Social phobias","Specific phobias","Separation anxiety disorder","Generalized anxiety disorders","Anorexia nervosa","Anxious personality disorder","Adjustment disorders","Asperger syndrome","ADHD","Oppositional defiant disorder","Transient tics","Chronic tics/Tourette’s syndrome","Nonorganic enuresis","Nonorganic encopresis"), Grepl=T)
-
-
-   
+tbl_func(df_baseline,strat_var="group",vars=c("SRS","CY-BOCS","COIS-R","CGI-S","CGAS","TOCS","TAFQ-A","Kidscreen-10"), Grepl=T)
 
 ```
+
+
+\newpage
+# Table 3 - Family characteristics
+
+```{r}
+df_t3 <- df[grepl("group|FES|PSS_0|FAS_0",colnames(df))]
+colnames(df_t3) <- gsub("_0","",colnames(df_t3))
+tbl_func(df_t3,strat_var="group",vars=c("FES","PSS","FAS"), Grepl=T)
+
+```
+
+*For PSS, FES, and SRS the average of the parents who responded is presented*
 
 \newpage
 # Figure 1 - Psychopathological scores
@@ -68,6 +73,7 @@ ggarrange(figScores(df,"CY-BOCS", lin_reg=T),
           figScores(df,"Kidscreen-10", lin_reg=T),
           figScores(df,"TAFQ-A", lin_reg=T),
           figScores(df,"FAS", lin_reg=T, simple=F),
+          figScores(df,"PSS", lin_reg=T, simple=F),
              ncol=1, common.legend=T, legend="bottom") +
   theme(plot.margin = margin(0.1,0.1,0.1,0.1, "cm"))
 
@@ -77,7 +83,7 @@ ggarrange(figScores(df,"CY-BOCS", lin_reg=T),
 \newpage
 # Figure 2 - Response Status at 16 weeks
 
-```{r fig.height=3}
+```{r fig.height=5}
 df_bar <- data.frame(table(df$CBOCS_grup,df$group))
 colnames(df_bar) <- c("severity","group","freq")
 df_bar$perc[df_bar$group == "A"] <- df_bar$freq[df_bar$group == "A"]/sum(df_bar$freq[df_bar$group == "A"])
@@ -99,17 +105,14 @@ df_bar$group[df_bar$group == "B"] <-
 paste0("B \n (n = ", sum(df_bar$freq[df_bar$group == "B"]), ")") 
 df_bar$group <- as.factor(df_bar$group)
 
-
-
-
 g1 <- ggplot(df_bar,aes(x=x_axis, fill=forcats::fct_rev(severity), color=forcats::fct_rev(severity), y=perc)) + 
   theme_minimal() +  coord_flip() +
   scale_y_continuous(labels = scales::percent) +
   scale_x_continuous(breaks = c(1,2), labels=c(levels(df_bar$group))) +
   theme(legend.position = "top", legend.title = element_blank(),
         axis.title = element_blank(), panel.grid=element_blank()) +
-  scale_fill_brewer(guide=guide_legend(reverse = TRUE), palette = "YlOrRd", direction=-1) +
-  scale_color_brewer(guide=guide_legend(reverse = TRUE), palette = "YlOrRd", direction=-1)
+  scale_fill_brewer(guide=guide_legend(reverse = TRUE), palette = "RdYlGn", direction=1) +
+  scale_color_brewer(guide=guide_legend(reverse = TRUE), palette = "RdYlGn", direction=1)
  
 
 g1 <-  g1 + geom_segment(aes(x=1.375,xend=1.625,y=0,yend=0), color="grey")
@@ -118,7 +121,37 @@ for(i in 1:nrow(df_segment)){
   g1 <-  g1 + geom_segment(aes_string(x=1.375,xend=1.625,y=df_segment[i,1],yend=df_segment[i,2]),color="grey")
 }
 
-g1 + geom_bar(stat="identity", width=0.75) 
+g1 <- g1 + geom_bar(stat="identity", width=0.75) 
+
+
+# Proportion of patients no longer meeting the diagnostic criteria for OCD, ICD-10 F.42 assesed with K-SADS-PL (82) at the end of the intervention (remission).
+
+g2 <- ggplot(data=df_bar[df_bar$severity == "0-10 (Remitted)",], aes(x=group, y=perc)) + geom_bar(stat="identity", color=brewer.pal(n = 4, name = "RdYlGn")[4], fill=brewer.pal(n = 4, name = "RdYlGn")[4]) + theme_minimal() +
+  scale_y_continuous(labels = scales::percent) +
+  theme(axis.title.y=element_blank()) + xlab("Proportion of participants \n with remission \n at the end of intervention")
+  
+
+# Treatment response based on the definition of a reduction on the CY-BOCS at week 16 of at least 30% in intraindividual comparison with the score at week 0.  
+df$Response <- as.numeric(as.character(df$Response))
+test <- summarySE(df, measurevar="Response", groupvars="group",na.rm=T)
+test$group <- as.character(test$group)
+test$group[test$group == "A"] <- 
+paste0("A \n (n = ", sum(test$N[test$group == "A"]), ")") 
+test$group[test$group == "B"] <- 
+paste0("B \n (n = ", sum(test$N[test$group == "B"]), ")") 
+test$group <- as.factor(test$group)
+
+g3 <- ggplot(data=test, aes(x=group, y=Response)) + geom_bar(stat="identity") + theme_minimal() +
+  scale_y_continuous(labels = scales::percent) +
+  theme(axis.title.y=element_blank()) + xlab("Proportion of participants \n with 30% reduction \n at the end of intervention")
+  
+
+
+
+#ALL three figures
+grid.arrange(g1,g2,g3, layout_matrix=rbind(c(1,1),c(2,3)))
+
+
 
 ```
 
@@ -142,11 +175,17 @@ ggarrange(fig_neq, fig_burden, ncol=1, common.legend=T, legend="bottom") + theme
 
 
 \newpage
-# Supplemental Table 1 - Psychopathological scores
+# Supplemental Table 1 - Comorbidities
 
-**Refers to Figure 1**
+**Detailed comorbidities**
 
-# Supplemental Table 2 - Kidscreen-52
+* Example, DS060 - Depression ...
+
+# Supplemental Table 2 - Psychopathological scores
+
+**Numbers from Figure 1**
+
+# Supplemental Table 3 - Kidscreen-52
 
 Tabllerne som ovenstående figur 1 bygger på.
 
@@ -170,6 +209,7 @@ This timeline will, together with the commits to the version control system, fun
 * 03.05.2021 - Second evaluation of the statistical report.
 * 11.05.2021 - Third evaluation of the statistical report.
 * 14.05.2021 - Fourth evaluation of the statistical report.
+* 19.05.2021 - Fifth evaluation of the statistical report.
 
 \newpage
 # Supplemental Assumptions
@@ -190,41 +230,25 @@ autoplot(lm(`CY-BOCS_16` ~ group + `CY-BOCS_0`, data=df)) + theme_minimal()
 ```
 
 ## KIDSCREEN-10 (secondary)
-
-```{r fig.height = 5}
-autoplot(lm(`CY-BOCS_16` ~ group + `CY-BOCS_0`, data=df)) + theme_minimal()
-```
+Lorem ipsum...
 
 ## NEQ (secondary)
-32 ITEMS
+Lorem ipsum...
 
 ## COIS (exploratory)
-COIS
+Lorem ipsum...
 
 ## CGI-S (exploratory)
-COIS
+Lorem ipsum...
 
 ## CGI-I (exploratory)
-COIS
+Lorem ipsum...
 
 ## TAFQ-A (exploratory)
-COIS
+Lorem ipsum...
 
 ## CGAS (exploratory)
-COIS
+Lorem ipsum...
 
 ## TOCS (exploratory)
-COIS
-
-Clinical state (CY-BOCS, KIDSCREEN, COIS**, CGI-S, CGI-I (not at week 0),  TAFQ-A*)
-C-GAS
-Self-report OCD rating (TOCS)
-Diagnostics (K-SADS-PL)
-Intelligence (WISC-V/WAIS-IV)
-Social competences (SRS)
-Negative effects of psychotherapy (NEQ)
-PSS, Family accomodation (FAS)
-Family Environment (FES)**
-Treatment compliance
-Experience of service questionnaire
-
+Lorem ipsum...

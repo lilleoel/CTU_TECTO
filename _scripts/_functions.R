@@ -11,6 +11,7 @@ library(nlme)
 library(ggpubr)
 library(RColorBrewer)
 library(ggfortify)
+library(Rmisc)
 set_flextable_defaults(fonts_ignore=TRUE)
 knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, fig.width = 7, fig.align = "center")
 
@@ -77,6 +78,14 @@ var_beta <- function(n, min, max, side,digs=0){ #  <- for skewed variables
       if(first.col.name != "") colnames(temp)[1] <- first.col.name
       
       temp[temp[[2]] == "1",2] <- ""
+      
+      if(any(grepl("\\|",temp[,1]))){
+         category <- data.frame(t(data.frame(strsplit(temp[grepl("\\|",temp[,1]),1],"\\|"))))
+         if(nrow(category) > 1) category[duplicated(category[,1]),1] <- " "
+      
+         temp[grepl("\\|",temp[,1]),2] <- category[,2]
+         temp[grepl("\\|",temp[,1]),1] <- category[,1]
+      }
       
       return(FitFlextableToPage(align(flextable(data.frame(temp, check.names = F)),align="center",part="header")))
    }
