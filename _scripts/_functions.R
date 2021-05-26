@@ -123,9 +123,9 @@ var_beta <- function(n, min, max, side,digs=0){ #  <- for skewed variables
          colnames(df_linreg) <- c("pt_id","group","baseline","followup")
          lin_reg <- lm(followup~group+baseline, data = df_linreg)
          lin_p <- summary(lin_reg)$coefficients
-         lin_p <- round(lin_p[grepl("group",row.names(lin_p)),ncol(lin_p)],digits=3)
-         if(lin_p == 0){ lin_p <- "p < 0.001"}else{
-            lin_p <- paste0("p = ",lin_p)
+         lin_p <- round(lin_p[grepl("group",row.names(lin_p)),ncol(lin_p)],digits=2)
+         if(lin_p == 0){ lin_p <- "p<0.01"}else{
+            lin_p <- paste0("p=",lin_p)
          }
          figgen <- figgen + annotate("text",x=Inf,y=Inf,label=lin_p, hjust=1.1, vjust=-1.1, color="black", angle=90)
       }

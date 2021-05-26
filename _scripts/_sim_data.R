@@ -126,6 +126,19 @@ df$group <- var_rand(n,2)
    df$`PSS_8` <- var_sample(n, 0, 44)
    df$`PSS_16` <- var_sample(n,0,32)
    
+#Comorbidities
+   df$`Depressive disorders|Mild depressive episode (F32.0)` <- var_sample(n,0,1)
+   df$`Depressive disorders|Moderate depressive episode (F32.1)` <- var_sample(n,0,1)
+   df$`Depressive disorders|Severe depressive episode without psychotic symptoms (F32.2)` <- var_sample(n,0,1)
+   df$`Anxiety disorders|Agoraphobia (F40.0)` <- var_sample(n,0,1)
+   df$`Anxiety disorders|Social phobias (F40.1)` <- var_sample(n,0,1)
+   df$`Anxiety disorders|Specific phobias (F40.2)` <- var_sample(n,0,1)
+   df$`Anxiety disorders|Panic disorder (F41.0)` <- var_sample(n,0,1)
+   df$`Anxiety disorders|Generalized anxiety disorder (F41.1)` <- var_sample(n,0,1)
+   df$`Adjustment disorders|Acute stress reaction (F43.0)` <- var_sample(n,0,1)
+   df$`Adjustment disorders|Post-traumatic stress disorder (F43.1)` <- var_sample(n,0,1)
+   
+   
    
 #Creating the df
    df <- as.data.frame(df, check.names=FALSE)

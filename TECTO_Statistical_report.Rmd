@@ -34,7 +34,7 @@ tbl_func(df,strat_var="group",vars=c("Age","Gender","Nationality","Parental educ
 
 ```
 
-*The education-level from the parent with the highest education is used (using ISCED). *
+*The education-level from the parent with the highest education is used (using ISCED).*
 
 \newpage
 # Table 2 - Baseline psychopathology
@@ -46,6 +46,7 @@ tbl_func(df_baseline,strat_var="group",vars=c("SRS","CY-BOCS","COIS-R","CGI-S","
 
 ```
 
+*SRS: Social responsiveness scale; CY-BOCS: Children’s Yale–Brown Obsessive Compulsive Scale; COIS-R: Child Obsessive-Compulsive Impact Scale-Revised; CGI-S: Clinical Global Impressions Severity; CGAS: Children’s Global Assessment Scale; TOCS: Toronto Obsessive-Compulsive Scale; TAFQ-A: Though-Action Fusion Questionaire for Adolescents.*
 
 \newpage
 # Table 3 - Family characteristics
@@ -57,12 +58,12 @@ tbl_func(df_t3,strat_var="group",vars=c("FES","PSS","FAS"), Grepl=T)
 
 ```
 
-*For PSS, FES, and SRS the average of the parents who responded is presented*
+*For PSS, FES, and SRS the average of the parents who responded is presented. FES: Family Environment Scale; PSS: Parental stress scale; FAS: Family Accommodation Scale for Obsessive-Compulsive Disorder.*
 
 \newpage
 # Figure 1 - Psychopathological scores
 
-```{r, fig.height=9}
+```{r, fig.height=8}
 
 ggarrange(figScores(df,"CY-BOCS", lin_reg=T),
           figScores(df,"COIS-R", lin_reg=T),
@@ -79,9 +80,10 @@ ggarrange(figScores(df,"CY-BOCS", lin_reg=T),
 
 ```
 
+*CY-BOCS: Children’s Yale–Brown Obsessive Compulsive Scale; COIS-R: Child Obsessive-Compulsive Impact Scale-Revised; CGI-S: Clinical Global Impressions Severity; CGI-I: Clinical Global Impressions Improvement; Children’s Global Assessment Scale; TOCS: Toronto Obsessive-Compulsive Scale; TAFQ-A: Though-Action Fusion Questionaire for Adolescents; FAS: Family Accommodation Scale for Obsessive-Compulsive Disorder; PSS: Parental stress scale.*
 
 \newpage
-# Figure 2 - Response Status at 16 weeks
+# Figure 2 - Response status at 16 weeks
 
 ```{r fig.height=5}
 df_bar <- data.frame(table(df$CBOCS_grup,df$group))
@@ -128,7 +130,7 @@ g1 <- g1 + geom_bar(stat="identity", width=0.75)
 
 g2 <- ggplot(data=df_bar[df_bar$severity == "0-10 (Remitted)",], aes(x=group, y=perc)) + geom_bar(stat="identity", color=brewer.pal(n = 4, name = "RdYlGn")[4], fill=brewer.pal(n = 4, name = "RdYlGn")[4]) + theme_minimal() +
   scale_y_continuous(labels = scales::percent) +
-  theme(axis.title.y=element_blank()) + xlab("Proportion of participants \n with remission \n at the end of intervention")
+  theme(axis.title.y=element_blank()) + xlab("Proportion of remitted\n participants at the \n of intervention")
   
 
 # Treatment response based on the definition of a reduction on the CY-BOCS at week 16 of at least 30% in intraindividual comparison with the score at week 0.  
@@ -158,7 +160,7 @@ grid.arrange(g1,g2,g3, layout_matrix=rbind(c(1,1),c(2,3)))
  
 
 \newpage
-# Figure 3 - Negative Effects Questionnaire 
+# Figure 3 - Negative effects questionnaire 
 
 ```{r, fig.height=4}
 fig_neq <- figScores(df,"NEQ", xminmax=c(3.5,16.5), simple=F, lin_reg_simple = T)
@@ -177,14 +179,18 @@ ggarrange(fig_neq, fig_burden, ncol=1, common.legend=T, legend="bottom") + theme
 \newpage
 # Supplemental Table 1 - Comorbidities
 
-**Detailed comorbidities**
+```{r}
+df_t3 <- df[grepl("group|F32.|F40.|F41.|F43.",colnames(df))]
+tbl_func(df_t3,strat_var="group",vars=colnames(df_t3), Grepl=T)
 
-* Example, DS060 - Depression ...
+```
 
+\newpage
 # Supplemental Table 2 - Psychopathological scores
 
 **Numbers from Figure 1**
 
+\newpage
 # Supplemental Table 3 - Kidscreen-52
 
 Tabllerne som ovenstående figur 1 bygger på.
