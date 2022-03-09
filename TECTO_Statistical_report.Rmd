@@ -23,7 +23,7 @@ source("_scripts/_sim_data.R")
 # Table 1 - Participant characteristics
 
 ```{r}
-tbl_func(df,strat_var="group",vars=c("Age","Gender","Nationality","Parental education level","Parental nationality",
+tbl_func(df,strat_var="group",vars=c("Age (years)","Gender","Nationality","Parental education level (ISCED)","Parental nationality",
                                      "Full-scale IQ","OCD-subtype",
                                      "Comorbidities|Depressive disorders","Comorbidities|Anxiety disorders",
                                      "Comorbidities|Adjustment disorders","Comorbidities|Eating disorders",
@@ -31,59 +31,136 @@ tbl_func(df,strat_var="group",vars=c("Age","Gender","Nationality","Parental educ
                                      "Comorbidities|Hyperkinetic disorders","Comorbidities|Conduct disorders",
                                      "Comorbidities|Tics/Tourettes syndrome","Comorbidities|Elimination disorders"))
 
-
-```
-
-*The education-level from the parent with the highest education is used (using ISCED).*
-
-\newpage
-# Table 2 - Baseline psychopathology
-
-```{r}
 df_baseline <- df[,grepl("pt_id|group|_0", colnames(df))]
 colnames(df_baseline) <- gsub("_0","",colnames(df_baseline))
-tbl_func(df_baseline,strat_var="group",vars=c("SRS","CY-BOCS","COIS-R","CGI-S","CGAS","TOCS","TAFQ-A","Kidscreen-10"), Grepl=T)
+tbl_func(df_baseline,strat_var="group",vars=c("CY-BOCS","KIDSCREEN","COIS-R","CGI-S","CGAS","TOCS"), Grepl=F, first.col.name = "Baseline psychopathology")
 
-```
-
-*SRS: Social responsiveness scale; CY-BOCS: Children’s Yale–Brown Obsessive Compulsive Scale; COIS-R: Child Obsessive-Compulsive Impact Scale-Revised; CGI-S: Clinical Global Impressions Severity; CGAS: Children’s Global Assessment Scale; TOCS: Toronto Obsessive-Compulsive Scale; TAFQ-A: Though-Action Fusion Questionaire for Adolescents.*
-
-\newpage
-# Table 3 - Family characteristics
-
-```{r}
-df_t3 <- df[grepl("group|FES|PSS_0|FAS_0",colnames(df))]
+df_t3 <- df[grepl("group|FES|PSS_0|FAS-PR_0",colnames(df))]
 colnames(df_t3) <- gsub("_0","",colnames(df_t3))
-tbl_func(df_t3,strat_var="group",vars=c("FES","PSS","FAS"), Grepl=T)
+tbl_func(df_t3,strat_var="group",vars=c("FAS-PR","PSS","FES"), Grepl=T, first.col.name = "Family characteristics")
 
 ```
 
-*For PSS, FES, and SRS the average of the parents who responded is presented. FES: Family Environment Scale; PSS: Parental stress scale; FAS: Family Accommodation Scale for Obsessive-Compulsive Disorder.*
+*The education-level from the parent with the highest education is used (using ISCED). For PSS, FES, and SRS the average of the parents who responded is presented.*
+
+*CY-BOCS: Children’s Yale–Brown Obsessive Compulsive Scale; COIS-R: Child Obsessive-Compulsive Impact Scale-Revised; CGI-S: Clinical Global Impressions Severity; CGAS: Children’s Global Assessment Scale; TOCS: Toronto Obsessive-Compulsive Scale; FES: Family Environment Scale; PSS: Parental stress scale; FAS-PR: Family Accommodation Scale for Obsessive-Compulsive Disorder.*
 
 \newpage
-# Figure 1 - Psychopathological scores
+# Figure 1 - CONSORT flow diagram 
+
+```{r, fig.height=7,fig.width=7.5, message=FALSE}
+# consort.plot.R
+# template for a CONSORT flow chart
+# Feb 2017
+library(diagram)
+# dummy recruitment numbers
+consort.assessed = 200
+consort.excluded = 75
+consort.declined = 50
+consort.not.meet = 20
+consort.other = 5
+consort.randomised = consort.assessed - consort.excluded
+allocate.control = allocate.treatment = 62
+died.control = died.treatment = 1
+lost.fu.control = died.control + 0
+lost.fu.treatment = died.treatment + 0
+excluded.control = 0
+excluded.treatment = 0
+analysed.treatment = allocate.treatment - excluded.treatment
+analysed.control = allocate.control - excluded.control
+pp.treatment = allocate.treatment - 5
+pp.control = allocate.control - 5
+# labels
+b = c('Enrollment', 'Allocation', 'Follow-up', 'Analysis')
+l1 = paste('Assessed for eligibility (n=', consort.assessed, ')', sep='') # numbers from above
+l2 = paste('Excluded (n=', consort.excluded, ')\n',
+           '•   Declined to participate (n=', consort.declined, ')\n',
+           '•   Not meeting inclusion criteria (n=', consort.not.meet,')\n',
+           '•   Other reasons (n=', consort.other, ')', sep='')
+l3 = paste('Randomised (n=', consort.randomised,')', sep='')
+l4 = paste('Allocated to control (n=', allocate.control ,')\n', sep='')
+l5 = paste('Allocated to intervention (n=', allocate.treatment ,')\n',
+           '• Received intervention (n=', allocate.treatment ,')\n', sep='')
+l6 = paste('Lost to follow-up (n=', lost.fu.control, ')\n', # control lost to fu
+           '•   Died (n=', died.control,')', sep='')
+l7 = paste('Lost to follow-up (n=', lost.fu.treatment, ')\n', # treatment lost to fu
+           '•   Died (n=', died.treatment,')', sep='')
+l8 = paste('Analysed (n=', analysed.control, ')\n', 
+           '•   Per protocol (n=', pp.control,')', sep='')
+l9 = paste('Analysed (n=', analysed.treatment, ')\n', 
+           '•   Per protocol (n=', pp.treatment,')', sep='')
+labels = c(l1, l2, l3, l4, l5, l6, l7, l8, l9, b)
+n.labels = length(labels)
+### make data frame of box chars
+frame = read.table(sep='\t', stringsAsFactors=F, skip=0, header=T, text='
+i	x	y	box.col	box.type	box.prop	box.size
+1	0.5	0.94	white	square	0.25	0.16
+2	0.76	0.82	white	square	0.28	0.21
+3	0.5	0.7	white	square	0.25	0.15
+4	0.26	0.5	white	square	0.23	0.2
+5	0.76	0.5	white	square	0.23	0.2
+6	0.26	0.33	white	square	0.2	0.2
+7	0.76	0.33	white	square	0.2	0.2
+8	0.26	0.15	white	square	0.2	0.2
+9	0.76	0.15	white	square	0.2	0.2
+10	0.1	0.95	light blue	round	0.7	0.035
+11	0.51	0.6	light blue	round	0.7	0.035
+12	0.51	0.411	light blue	round	0.7	0.035
+13	0.51	0.235	light blue	round	0.7	0.035')
+pos = as.matrix(subset(frame, select=c(x, y)))
+M = matrix(nrow = n.labels, ncol = n.labels, byrow = TRUE, data = 0)
+M[3, 1] = "' '"
+M[4, 3] = "' '"
+M[5, 3] = "' '"
+M[6, 4] = "' '"
+M[7, 5] = "' '"
+M[8, 6] = "' '"
+M[9, 7] = "' '"
+tcol = rep('black', n.labels)
+to.blank = c(2,4:9)
+tcol[to.blank] = 'transparent' # blank some boxes to add text as right aligned
+#postscript('consort.flow.eps', width=7.5, height=7, horiz=F)
+#tiff('consort.flow.tif', width=7.5, height=7, units='in', res=300, compression = 'lzw')
+par(mai=c(0,0.04,0.04,0.04))
+plotmat(M, pos = pos, name = labels, lwd = 1, shadow.size=0, curve=0,
+        box.lwd = 2, cex.txt = 1, box.size = frame$box.size, box.col=frame$box.col,
+        box.type = frame$box.type, box.prop = frame$box.prop, txt.col = tcol)
+# add left-aligned text; -0.185 controls the horizontal indent
+for (i in to.blank){
+  text(x=pos[i,1] - 0.185, y=pos[i,2], adj=c(0,0.5), labels=labels[i]) # minus controls text position
+}
+# extra arrow to excluded
+arrows(x0=0.5, x1=0.55, y0=0.82, length=0.12)
+
+
+
+
+```
+
+\newpage
+# Figure 2 - Psychopathology and family burden
 
 ```{r, fig.height=8}
 
-ggarrange(figScores(df,"CY-BOCS", lin_reg=T),
-          figScores(df,"COIS-R", lin_reg=T),
-          figScores(df,"CGI-S", lin_reg=T),
-          figScores(df,"CGI-I", lin_reg_simple=T),
-          figScores(df,"CGAS", lin_reg=T),
-          figScores(df,"TOCS", lin_reg=T),
-          figScores(df,"Kidscreen-10", lin_reg=T),
-          figScores(df,"TAFQ-A", lin_reg=T),
-          figScores(df,"FAS", lin_reg=T, simple=F),
-          figScores(df,"PSS", lin_reg=T, simple=F),
-             ncol=1, common.legend=T, legend="bottom") +
-  theme(plot.margin = margin(0.1,0.1,0.1,0.1, "cm"))
+ggarrange(figScores(df,"CY-BOCS", lin_reg=T, parents="no") + theme(plot.background = element_rect(fill = "#f7f7ff",color=NA)),
+          figScores(df,"KIDSCREEN", lin_reg=T, parents="yes") + theme(plot.background = element_rect(fill = "#fff7f7",color=NA)),
+          figScores(df,"COIS-R", lin_reg=T, parents="yes"),
+          figScores(df,"CGI-S", lin_reg=T, parents="no"),
+          figScores(df,"CGI-I", lin_reg_simple=T, parents="no"),
+          figScores(df,"CGAS", lin_reg=T, parents="no"),
+          figScores(df,"TOCS", lin_reg=T, parents="yes"),
+          figScores(df,"FAS-PR", lin_reg=T, parents="only"),
+          figScores(df,"PSS", lin_reg=T, simple=F, parents="only"),
+          g_legend(figScores(df,"KIDSCREEN", lin_reg=T, hide_legend=F, parents="yes")),
+             ncol=1, heights=c(1,1,1,1,1,1,1,1,1,1,0.1)) +
+  theme(plot.margin = margin(0.1,0.1,0.1,0.1, "cm"))  
 
 ```
 
-*CY-BOCS: Children’s Yale–Brown Obsessive Compulsive Scale; COIS-R: Child Obsessive-Compulsive Impact Scale-Revised; CGI-S: Clinical Global Impressions Severity; CGI-I: Clinical Global Impressions Improvement; Children’s Global Assessment Scale; TOCS: Toronto Obsessive-Compulsive Scale; TAFQ-A: Though-Action Fusion Questionaire for Adolescents; FAS: Family Accommodation Scale for Obsessive-Compulsive Disorder; PSS: Parental stress scale.*
+*CY-BOCS: Children’s Yale–Brown Obsessive Compulsive Scale; COIS-R: Child Obsessive-Compulsive Impact Scale-Revised; CGI-S: Clinical Global Impressions Severity; CGI-I: Clinical Global Impressions Improvement; Children’s Global Assessment Scale; TOCS: Toronto Obsessive-Compulsive Scale; FAS-PR: Family Accommodation Scale for Obsessive-Compulsive Disorder; PSS: Parental stress scale.*
 
 \newpage
-# Figure 2 - Response status at 16 weeks
+# Figure 3 - Response status at 16 weeks
 
 ```{r fig.height=5}
 df_bar <- data.frame(table(df$CBOCS_grup,df$group))
@@ -128,9 +205,9 @@ g1 <- g1 + geom_bar(stat="identity", width=0.75)
 
 # Proportion of patients no longer meeting the diagnostic criteria for OCD, ICD-10 F.42 assesed with K-SADS-PL (82) at the end of the intervention (remission).
 
-g2 <- ggplot(data=df_bar[df_bar$severity == "0-10 (Remitted)",], aes(x=group, y=perc)) + geom_bar(stat="identity", color=brewer.pal(n = 4, name = "RdYlGn")[4], fill=brewer.pal(n = 4, name = "RdYlGn")[4]) + theme_minimal() +
+g2 <- ggplot(data=df_bar[df_bar$severity == "0-10 (Remitted)",], aes(x=group, y=perc)) + geom_bar(stat="identity", color="#000099", fill="#000099") + theme_minimal() +
   scale_y_continuous(labels = scales::percent) +
-  theme(axis.title.y=element_blank()) + xlab("Proportion of remitted\n participants at the \n of intervention")
+  theme(axis.title.y=element_blank()) + xlab("Remitted participants \n assessed using K-SADS-PL")
   
 
 # Treatment response based on the definition of a reduction on the CY-BOCS at week 16 of at least 30% in intraindividual comparison with the score at week 0.  
@@ -145,31 +222,32 @@ test$group <- as.factor(test$group)
 
 g3 <- ggplot(data=test, aes(x=group, y=Response)) + geom_bar(stat="identity") + theme_minimal() +
   scale_y_continuous(labels = scales::percent) +
-  theme(axis.title.y=element_blank()) + xlab("Proportion of participants \n with 30% reduction \n at the end of intervention")
+  theme(axis.title.y=element_blank()) + xlab("Responders (with 30% reduction) \n assessed using CY-BOCS")
   
 
 
 
 #ALL three figures
-grid.arrange(g1,g2,g3, layout_matrix=rbind(c(1,1),c(2,3)))
-
-
+grid.arrange(g1 + watermarkGrob()
+    ,g2 + watermarkGrob(),g3 + watermarkGrob(), layout_matrix=rbind(c(1,1),c(2,3)))
 
 ```
 
  
 
 \newpage
-# Figure 3 - Negative effects questionnaire 
+# Figure 4 - Negative effects questionnaire 
 
 ```{r, fig.height=4}
 fig_neq <- figScores(df,"NEQ", xminmax=c(3.5,16.5), simple=F, lin_reg_simple = T)
 fig_burden <- ggplot(df, aes(x=group, y=`Negative effect burden`, color=group, fill=group)) + stat_summary(fun=mean, geom="bar", width=0.5) + 
   stat_summary(fun.data=mean_cl_normal, geom="errorbar", width=0.25, color="black") + theme_minimal() +
   scale_color_hue(direction = -1, h.start=90) + scale_fill_hue(direction = -1, h.start=90) + 
-  ylab("NEQ per week") + theme(axis.title.x = element_blank())
+  ylab("NEQ per week") + theme(axis.title.x = element_blank()) + 
+  scale_color_manual(values=brewer.pal(n = 4, name = "Set1")[3:4]) + 
+  scale_fill_manual(values=brewer.pal(n = 4, name = "Set1")[3:4])
 
-ggarrange(fig_neq, fig_burden, ncol=1, common.legend=T, legend="bottom") + theme(plot.margin = margin(0.1,0.1,0.1,0.1, "cm"))
+ggarrange(fig_neq + watermarkGrob(), fig_burden + watermarkGrob(), ncol=1, common.legend=T, legend="bottom") + theme(plot.margin = margin(0.1,0.1,0.1,0.1, "cm"))
 
 
 
@@ -177,7 +255,7 @@ ggarrange(fig_neq, fig_burden, ncol=1, common.legend=T, legend="bottom") + theme
 
 
 \newpage
-# Supplemental Table 1 - Comorbidities
+# Supplemental Table 1 - Detailed comorbidities
 
 ```{r}
 df_t3 <- df[grepl("group|F32.|F40.|F41.|F43.",colnames(df))]
@@ -186,14 +264,14 @@ tbl_func(df_t3,strat_var="group",vars=colnames(df_t3), Grepl=T)
 ```
 
 \newpage
-# Supplemental Table 2 - Psychopathological scores
+# Supplemental Table 2 - Psychopathology and family burden
 
-**Numbers from Figure 1**
+*Numbers from Figure 2*
 
 \newpage
 # Supplemental Table 3 - Kidscreen-52
 
-Tabllerne som ovenstående figur 1 bygger på.
+*Detailed scores from Kidscreen-52*
 
 * Physical well-being
 * Psychological well-being
@@ -207,6 +285,12 @@ Tabllerne som ovenstående figur 1 bygger på.
 * Financial ressources
 
 \newpage
+# Supplemental Table 4 - SAE/SAR/SUSAR
+
+*Raw data.*
+
+
+\newpage
 # Supplemental Timeline
 This timeline will, together with the commits to the version control system, function as a log of the statistical process
 
@@ -216,6 +300,9 @@ This timeline will, together with the commits to the version control system, fun
 * 11.05.2021 - Third evaluation of the statistical report.
 * 14.05.2021 - Fourth evaluation of the statistical report.
 * 19.05.2021 - Fifth evaluation of the statistical report.
+* 11.06.2021 - Corrections after sixth evaluation.
+* 27.07.2021 - Correction after seventh evaluation.
+* 09.03.2022 - Corresponds to the submitted version of the SAP
 
 \newpage
 # Supplemental Assumptions
@@ -231,30 +318,48 @@ The assumptions for regression models will be assessed using four figures, for e
 
 ## CY-BOCS (primary)
 
-```{r fig.height = 5}
+```{r fig.height = 4}
 autoplot(lm(`CY-BOCS_16` ~ group + `CY-BOCS_0`, data=df)) + theme_minimal()
 ```
 
 ## KIDSCREEN-10 (secondary)
-Lorem ipsum...
+
+```{r fig.height = 4}
+autoplot(lm(`KIDSCREEN_16` ~ group + `KIDSCREEN_0`, data=df)) + theme_minimal()
+```
 
 ## NEQ (secondary)
-Lorem ipsum...
 
-## COIS (exploratory)
-Lorem ipsum...
+```{r fig.height = 4}
+autoplot(lm(`NEQ_16` ~ group, data=df)) + theme_minimal()
+```
+
+## COIS-R (exploratory)
+
+```{r fig.height = 4}
+autoplot(lm(`COIS-R_16` ~ group + `COIS-R_0`, data=df)) + theme_minimal()
+```
 
 ## CGI-S (exploratory)
-Lorem ipsum...
+
+```{r fig.height = 4}
+autoplot(lm(`CGI-S_16` ~ group + `CGI-S_0`, data=df)) + theme_minimal()
+```
 
 ## CGI-I (exploratory)
-Lorem ipsum...
 
-## TAFQ-A (exploratory)
-Lorem ipsum...
+```{r fig.height = 4}
+autoplot(lm(`CGI-I_16` ~ group, data=df)) + theme_minimal()
+```
 
 ## CGAS (exploratory)
-Lorem ipsum...
+
+```{r fig.height = 4}
+autoplot(lm(`CGAS_16` ~ group + `CGAS_0`, data=df)) + theme_minimal()
+```
 
 ## TOCS (exploratory)
-Lorem ipsum...
+
+```{r fig.height = 4}
+autoplot(lm(`TOCS_16` ~ group + `TOCS_0`, data=df)) + theme_minimal()
+```

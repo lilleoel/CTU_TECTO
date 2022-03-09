@@ -12,9 +12,16 @@ library(ggpubr)
 library(RColorBrewer)
 library(ggfortify)
 library(Rmisc)
+library(colorspace)
+library(grid)
+
 set_flextable_defaults(fonts_ignore=TRUE)
 knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, fig.width = 7, fig.align = "center")
 
+watermarkGrob <- function(){
+   annotation_custom(grid::textGrob("SIMULATED DATA",gp=gpar(fontsize=16, fontface="bold",lineheight=1,alpha=0.5,col="red"),rot=30),
+                     xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf)
+}
 
 ###### SIMULATE DATA ######
 var_sample <- function(n, min, max){ #  <- for normaldistributed data
@@ -48,6 +55,8 @@ var_beta <- function(n, min, max, side,digs=0){ #  <- for skewed variables
    tbl_func <- function(df, strat_var, vars = NULL, Grepl=FALSE, p_val=NA, remove.first.col = F,
                         first.col.name = ""){
       require(Publish)
+      
+      df[[strat_var]] <- as.factor(df[[strat_var]])
       
       if(Grepl) vars <- colnames(df)[grepl(paste0(vars,collapse="|"),colnames(df))]
       vars <- paste0("`",vars,"`")
@@ -87,27 +96,75 @@ var_beta <- function(n, min, max, side,digs=0){ #  <- for skewed variables
          temp[grepl("\\|",temp[,1]),1] <- category[,1]
       }
       
-      return(FitFlextableToPage(align(flextable(data.frame(temp, check.names = F)),align="center",part="header")))
+      return(FitFlextableToPage(align(flextable(data.frame(temp[,c(1:4)], check.names = F)),align="center",part="header")))
    }
 
 ###### Diagnostics scores fig ######
-   figScores <- function(df, var_name, xminmax=c(-0.5,16.5), 
-                         simple=T, as_perc=F, lin_reg=F, 
-                         lin_reg_simple=F){
+   figScores <- function(df, var_name, xminmax=c(-0.5,19.5), 
+                         simple=T, hide_legend = T, as_perc=F, lin_reg=F, 
+                         lin_reg_simple=F, parents="no"){
       df_fig <- df[,grepl(paste0("pt_id|group|",var_name),colnames(df))]
+      if(parents=="no"){ 
+         df_fig <- df_fig[,!grepl("parents",colnames(df_fig))] 
+         df_fig$group <- paste0("Participants ", df_fig$group)
+         
+         colored <- brewer.pal(n = 4, name = "Set1")[3:4]
+         alphaed <- c(1,1)
+         linetyped <- c("solid","solid")
+      }
+      if(parents=="yes"){ 
+         df_temppartici <- df_fig[,!grepl("parents",colnames(df_fig))] 
+         df_temppartici$group <- paste0("Participants ", df_temppartici$group)
+         
+         df_tempparent <- df_fig[,grepl("pt_id|group|parents",colnames(df_fig))] 
+         df_tempparent$group <- paste0("Parents ", df_tempparent$group)
+         colnames(df_tempparent) <- gsub("parents/","",colnames(df_tempparent))
+         
+         df_fig <- rbind(df_tempparent,df_temppartici)
+         
+         colored <- brewer.pal(n = 4, name = "Set1")[1:4]
+         alphaed <- c(0.5,0.5,1,1)
+         linetyped <- c("dashed","dashed","solid","solid")
+      }
+      if(parents=="only"){ 
+         df_fig$group <- paste0("Parents ", df_fig$group)
+
+         colored <- brewer.pal(n = 4, name = "Set1")[1:2]
+         alphaed <- c(0.5,0.5)
+         linetyped <- c("dashed","dashed")
+      }
       df_fig <- reshape(df_fig, direction = "long",idvar = c("pt_id","group"),varying = 3:ncol(df_fig),sep="_")
       names(df_fig)[names(df_fig) == var_name] <- "result"
       
+      df_fig$alpha <- 1
+      df_fig$alpha[grepl("Parent",df_fig$group)] <- 0.5
+      
+      df_fig$linet <- "dashed"
+      df_fig$linet[grepl("Parent",df_fig$group)] <- "solid"
+      
+      scaleFUN <- function(x) sprintf("%.1f", x)
+      
+      df_fig$pt_id <- as.numeric(df_fig$pt_id)
+      df_fig$group <- as.factor(df_fig$group)
+      df_fig$time <- as.numeric(df_fig$time)
+      df_fig$result <- as.numeric(df_fig$result)
+      
       figgen <- ggplot(df_fig, aes(x=time,y=result, color=group)) + 
          stat_summary(fun=mean, geom="point", position=position_dodge(width=1)) +
-         stat_summary(fun=mean, geom="line", position=position_dodge(width=1)) +
-         stat_summary(fun.data=mean_cl_normal, geom="errorbar", position=position_dodge(width=1), width=0.8) +
+         stat_summary(fun=mean, geom="line", position=position_dodge(width=1), aes(linetype=group, alpha=group)) +
+         stat_summary(fun.data=mean_cl_normal, geom="errorbar", position=position_dodge(width=1), width=0.8, aes(alpha=group)) +
          theme_minimal() + ylab(var_name) + xlab("weeks") + theme(legend.position = "bottom", legend.title = element_blank(),
-                                                                  plot.margin = unit(c(0,0,0,0),"cm"), axis.title.x = element_blank()) +
-         scale_color_brewer(palette="Dark2")
+                                                                  plot.margin = unit(c(0.05,0,0.05,0),"cm"), 
+                                                                  axis.title.x = element_blank(), 
+                                                                  axis.title=element_text(size=9,face="bold")) +   
+         scale_alpha_manual(values=alphaed, guide=FALSE) +
+         scale_linetype_manual(values=linetyped, guide=FALSE) +
+         scale_y_continuous(label=scaleFUN) +
+         scale_color_manual(values=colored)   + watermarkGrob()
+      
       
       if(simple){
-         figgen <- figgen + theme(legend.position = "none", axis.text.x = element_blank()) +
+         figgen <- figgen + theme(axis.text.x = element_blank()) +
             scale_x_continuous(breaks = NULL, limits=xminmax) 
       }else{
          figgen <- figgen + scale_x_continuous(breaks = c(0,4,8,16), labels=c(paste(c(0,4,8,16), "weeks")), limits=xminmax) +
@@ -117,34 +174,80 @@ var_beta <- function(n, min, max, side,digs=0){ #  <- for skewed variables
          figgen <- figgen + scale_y_continuous(labels = scales::percent_format(accuracy = 5L)) 
       }
       
+      if(hide_legend){
+         figgen <- figgen + theme(legend.position = "none")
+      }
+      
       if(lin_reg){
          df_linreg <- df_fig[df_fig$time == 0 | df_fig$time == 16,]
          df_linreg <- reshape(df_linreg, idvar = c("pt_id","group"), timevar = "time", direction = "wide")
          colnames(df_linreg) <- c("pt_id","group","baseline","followup")
-         lin_reg <- lm(followup~group+baseline, data = df_linreg)
-         lin_p <- summary(lin_reg)$coefficients
-         lin_p <- round(lin_p[grepl("group",row.names(lin_p)),ncol(lin_p)],digits=2)
-         if(lin_p == 0){ lin_p <- "p<0.01"}else{
-            lin_p <- paste0("p=",lin_p)
+         
+         p_label <- NULL
+         if(parents=="no"|parents=="yes"){
+            part_df_linreg <- df_linreg[!grepl("Parent",df_linreg$group),]
+            
+            part_lin_reg <- lm(followup~group+baseline, data = part_df_linreg)
+            part_lin_p <- summary(part_lin_reg)$coefficients
+            part_lin_p <- round(part_lin_p[grepl("group",row.names(part_lin_p)),ncol(part_lin_p)],digits=2)
+            if(part_lin_p == 0){ part_lin_p <- "p<0.01"}else{
+               part_lin_p <- paste0("p=",part_lin_p)
+            }  
+            p_label <- paste0("Participants: ", part_lin_p)
          }
-         figgen <- figgen + annotate("text",x=Inf,y=Inf,label=lin_p, hjust=1.1, vjust=-1.1, color="black", angle=90)
+         if(parents=="yes"|parents=="only"){
+            parent_df_linreg <- df_linreg[!grepl("Partic",df_linreg$group),]
+            
+            parent_lin_reg <- lm(followup~group+baseline, data = parent_df_linreg)
+            parent_lin_p <- summary(parent_lin_reg)$coefficients
+            parent_lin_p <- round(parent_lin_p[grepl("group",row.names(parent_lin_p)),ncol(parent_lin_p)],digits=2)
+            if(parent_lin_p == 0){ parent_lin_p <- "p<0.01"}else{
+               parent_lin_p <- paste0("p=",parent_lin_p)
+            }  
+            p_label <- paste0(p_label, "\n Parents: ", parent_lin_p)
+         }
+         figgen <- figgen + annotate("text",x=Inf,y=Inf,label=p_label, hjust=1, vjust=1.1, color="black", size=3)
       }
+      
       if(lin_reg_simple){
          df_linreg <- df_fig[df_fig$time == 16,]
-         colnames(df_linreg) <- c("pt_id","group","time","followup")
-         lin_reg <- lm(followup~group, data = df_linreg)
-         lin_p <- summary(lin_reg)$coefficients
-         lin_p <- round(lin_p[grepl("group",row.names(lin_p)),ncol(lin_p)],digits=3)
-         if(lin_p == 0){ lin_p <- "p < 0.001"}else{
-            lin_p <- paste0("p = ",lin_p)
-         }
+         df_linreg <- reshape(df_linreg, idvar = c("pt_id","group"), timevar = "time", direction = "wide")
+         colnames(df_linreg) <- c("pt_id","group","baseline","followup")
          
-      figgen <- figgen + annotate("text",x=Inf,y=Inf,label=lin_p, hjust=1.1, vjust=-1.1, color="black", angle=90)
+         p_label <- NULL
+         if(parents=="no"|parents=="yes"){
+            part_df_linreg <- df_linreg[!grepl("Parent",df_linreg$group),]
+            
+            part_lin_reg <- lm(followup~group, data = part_df_linreg)
+            part_lin_p <- summary(part_lin_reg)$coefficients
+            part_lin_p <- round(part_lin_p[grepl("group",row.names(part_lin_p)),ncol(part_lin_p)],digits=2)
+            if(part_lin_p == 0){ part_lin_p <- "p<0.01"}else{
+               part_lin_p <- paste0("p=",part_lin_p)
+            }  
+            p_label <- paste0("Participants: ", part_lin_p)
+         }
+         if(parents=="yes"|parents=="only"){
+            parent_df_linreg <- df_linreg[!grepl("Partic",df_linreg$group),]
+            
+            parent_lin_reg <- lm(followup~group, data = parent_df_linreg)
+            parent_lin_p <- summary(parent_lin_reg)$coefficients
+            parent_lin_p <- round(parent_lin_p[grepl("group",row.names(parent_lin_p)),ncol(parent_lin_p)],digits=2)
+            if(part_lin_p == 0){ parent_lin_p <- "p<0.01"}else{
+               parent_lin_p <- paste0("p=",parent_lin_p)
+            }  
+            p_label <- paste0(p_label, "\n Parents: ", parent_lin_p)
+         }
+         figgen <- figgen + annotate("text",x=Inf,y=Inf,label=p_label, hjust=1, vjust=1, color="black", size=3)
+         
       }
       return(figgen)
    }
       
-
+   g_legend<-function(a.gplot){
+      tmp <- ggplot_gtable(ggplot_build(a.gplot))
+      leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+      legend <- tmp$grobs[[leg]]
+      return(legend)}
 ###### ROD BELOW ######   
    
    
