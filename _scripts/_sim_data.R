@@ -8,9 +8,9 @@ df$group <- var_rand(n,2)
 
 # Baseline variables ----
    df$`Gender` <- var_categories(n,c("Male","Female","Transgender","Other"))
-   df$`Age` <- var_beta(n,13,17,"right")
+   df$`Age (years)` <- var_beta(n,13,17,"right")
    df$`Nationality` <- var_categories(n,c("Danish","Other"))
-   df$`Parental education level` <- var_sample(n,0,8)
+   df$`Parental education level (ISCED)` <- var_sample(n,0,8)
    df$`Parental nationality` <- var_categories(n,c("Danish","Danish and other","Other"))
    df$`Full-scale IQ` <- var_sample(n,70,120)
    df$`OCD-subtype` <- var_categories(n,c("Predominantly obsessional thoughts or ruminations",
@@ -62,11 +62,16 @@ df$group <- var_rand(n,2)
 #Seconday outcomes -----
 
    # #Kidscreen-52
-   df$`Kidscreen-10_0` <- var_beta(n,-4.327,4.703,"left",digs=2)
-   df$`Kidscreen-10_4` <- var_beta(n,-4.327,4.703,"left",digs=2)
-   df$`Kidscreen-10_8` <- var_beta(n,-4.327,4.703,"left",digs=2)
-   df$`Kidscreen-10_16` <- var_beta(n,-4.327,4.703,"left",digs=2)
+   df$`KIDSCREEN_0` <- var_beta(n,-4.327,4.703,"left",digs=2)
+   df$`KIDSCREEN_4` <- var_beta(n,-4.327,4.703,"left",digs=2)
+   df$`KIDSCREEN_8` <- var_beta(n,-4.327,4.703,"left",digs=2)
+   df$`KIDSCREEN_16` <- var_beta(n,-4.327,4.703,"left",digs=2)
 
+   df$`parents/KIDSCREEN_0` <- var_beta(n,-4.327,4.703,"left",digs=2)
+   df$`parents/KIDSCREEN_4` <- var_beta(n,-4.327,4.703,"left",digs=2)
+   df$`parents/KIDSCREEN_8` <- var_beta(n,-4.327,4.703,"left",digs=2)
+   df$`parents/KIDSCREEN_16` <- var_beta(n,-4.327,4.703,"left",digs=2)
+   
    #NEQ
    df$`NEQ_4` <- var_sample(n,0,32)
    df$`NEQ_8` <- var_sample(n,0,32)
@@ -84,6 +89,11 @@ df$group <- var_rand(n,2)
    df$`COIS-R_4` <- var_sample(n,0,32)
    df$`COIS-R_8` <- var_sample(n,0,32)
    df$`COIS-R_16` <- var_sample(n,0,32)
+   
+   df$`parents/COIS-R_0` <- var_sample(n,0,32)
+   df$`parents/COIS-R_4` <- var_sample(n,0,32)
+   df$`parents/COIS-R_8` <- var_sample(n,0,32)
+   df$`parents/COIS-R_16` <- var_sample(n,0,32)
 
    #CGI-S
    df$`CGI-S_0` <- var_sample(n,0,32)
@@ -106,7 +116,10 @@ df$group <- var_rand(n,2)
 
    #TOCS
    df$`TOCS_0` <- var_sample(n, 0, 44)
-   df$`TOCS_16` <- var_sample(n,0,32)
+   df$`TOCS_16` <- var_sample(n, 0, 44)
+   
+   df$`parents/TOCS_0` <- var_sample(n, 0, 44)
+   df$`parents/TOCS_16` <- var_sample(n, 0, 44)
    
    #TAFQ-A
    df$`TAFQ-A_0` <- var_sample(n, 0, 44)
@@ -115,10 +128,10 @@ df$group <- var_rand(n,2)
    df$`TAFQ-A_16` <- var_sample(n,0,32)
    
    #FAS
-   df$`FAS_0` <- var_sample(n, 0, 44)
-   df$`FAS_4` <- var_sample(n,0,32)
-   df$`FAS_8` <- var_sample(n, 0, 44)
-   df$`FAS_16` <- var_sample(n,0,32)
+   df$`FAS-PR_0` <- var_sample(n, 0, 44)
+   df$`FAS-PR_4` <- var_sample(n,0,32)
+   df$`FAS-PR_8` <- var_sample(n, 0, 44)
+   df$`FAS-PR_16` <- var_sample(n,0,32)
    
    #PSS
    df$`PSS_0` <- var_sample(n, 0, 44)
